@@ -46,7 +46,7 @@ final class RectorReplaceDefinesWithMethodCalls extends AbstractRector implement
         }
 
         if (null === $args) {
-            return $node;
+            return null;
         }
         return $this->returnNewNode($args);
     }
@@ -70,6 +70,6 @@ CODE_SAMPLE
                 , <<<'CODE_SAMPLE'
 className::classMethod('SOME_DEFINE_NAME');
 CODE_SAMPLE
-                , ['className' => '\Tests\App', 'methodName' => 'getDefine'])]);
+                , ['className' => '\Tests\App', 'methodName' => 'suppressedFunction'])]);
     }
 }
