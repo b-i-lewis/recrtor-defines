@@ -1,0 +1,21 @@
+{
+    "name": "b-i-lewis/recor-defines",
+    "type": "library",
+    "license": "MIT",
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests",
+            "Utils\\Rector\\": "utils/rector/src"
+        }
+    },
+    "authors": [
+        {
+            "name": "BenLewis",
+            "email": "ben.lewis@c2o.com"
+        }
+    ],
+    "require-dev": {
+        "rector/rector": "^0.14.0",
+        "phpunit/phpunit": "^9.5"
+    }
+}
