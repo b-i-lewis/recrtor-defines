@@ -24,12 +24,6 @@ final class RectorReplaceErrorSuppression extends AbstractRector implements Conf
 
     private array $replacementClass;
 
-    public function __construct(
-        private readonly NodesToAddCollector $nodesToAddCollector,
-        private readonly NodesToRemoveCollector $nodesToRemoveCollector,
-        private readonly AssignManipulator $assignManipulator
-    ) {}
-
     /**
      * What nodes are we looking for
      */
@@ -55,24 +49,27 @@ final class RectorReplaceErrorSuppression extends AbstractRector implements Conf
             return null;
         }
 
-        $parent = $node->getAttribute(AttributeKey::PARENT_NODE);
-
         $newArgs = [];
         foreach ($node->expr->getArgs() as $arg) {
             $newArgs[] = $arg->value;
         }
 
-        $newNode = $this->nodeFactory->createStaticCall(
-            $this->replacementClass['className'],
-            $this->replacementClass['methodName'],
-            [
-                $node->expr->name->toString(),
-                $newArgs,
-            ]
-        );
-
-//        $this->nodesToAddCollector->addNodeAfterNode($newNode, $parent);
-//        $this->removeNode($node);
+        if (empty($newArgs)) {
+            $newNode = $this->nodeFactory->createStaticCall(
+                $this->replacementClass['className'],
+                $this->replacementClass['methodName'],
+                [$node->expr->name->toString()]
+            );
+        } else {
+            $newNode = $this->nodeFactory->createStaticCall(
+                $this->replacementClass['className'],
+                $this->replacementClass['methodName'],
+                [
+                    $node->expr->name->toString(),
+                    $newArgs,
+                ]
+            );
+        }
         return $newNode;
     }
 

@@ -8,7 +8,7 @@ use Utils\Rector\Rector\RectorReplaceDefinesWithMethodCalls;
 return static function (RectorConfig $rectorConfig): void
 {
     $rectorConfig->paths([
-        __DIR__ . '/tests/index.php'
+        __DIR__ . '/tests'
     ]);
 
     $rectorConfig->ruleWithConfiguration(RectorReplaceDefinesWithMethodCalls::class, [
