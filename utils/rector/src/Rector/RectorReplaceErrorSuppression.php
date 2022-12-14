@@ -2,22 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Utils\Rector\Rector;
+namespace Rector;
 
 
 use PhpParser\Node;
 use PhpParser\Node\Expr\ErrorSuppress;
 use Rector\Core\Contract\Rector\ConfigurableRectorInterface;
-use Rector\Core\NodeManipulator\AssignManipulator;
 use Rector\Core\Rector\AbstractRector;
-use Rector\NodeTypeResolver\Node\AttributeKey;
-use Rector\PostRector\Collector\NodesToAddCollector;
-use RectorPrefix202208\Webmozart\Assert\Assert;
+use RectorPrefix202212\Webmozart\Assert\Assert;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\ConfiguredCodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
-use Rector\PostRector\Collector\NodesToRemoveCollector;
-
-use function RectorPrefix202208\dump;
 
 final class RectorReplaceErrorSuppression extends AbstractRector implements ConfigurableRectorInterface
 {
@@ -42,15 +36,26 @@ final class RectorReplaceErrorSuppression extends AbstractRector implements Conf
 
     public function refactor(Node $node)
     {
+
         if (!$node instanceof ErrorSuppress) {
             return null;
         }
-        if (!$node->expr instanceof Node\Expr\FuncCall) {
-            return null;
+
+        if ($node->expr instanceof Node\Expr\MethodCall) {
+            return $this->processMethodCall($node->expr);
+        } elseif ($node->expr instanceof Node\Expr\FuncCall) {
+            return $this->processFunctionCall($node->expr);
+        } elseif ($node->expr instanceof Node\Expr\StaticCall) {
+            return $this->processStaticMethodCall($node->expr);
         }
 
+        return null;
+    }
+
+    private function processFunctionCall(Node\Expr\FuncCall $node)
+    {
         $newArgs = [];
-        foreach ($node->expr->getArgs() as $arg) {
+        foreach ($node->getArgs() as $arg) {
             $newArgs[] = $arg->value;
         }
 
@@ -58,30 +63,89 @@ final class RectorReplaceErrorSuppression extends AbstractRector implements Conf
             $newNode = $this->nodeFactory->createStaticCall(
                 $this->replacementClass['className'],
                 $this->replacementClass['methodName'],
-                [$node->expr->name->toString()]
+                [$node->name->toString()]
             );
         } else {
             $newNode = $this->nodeFactory->createStaticCall(
                 $this->replacementClass['className'],
                 $this->replacementClass['methodName'],
                 [
-                    $node->expr->name->toString(),
+                    $node->name->toString(),
                     $newArgs,
                 ]
             );
         }
+
+        return $newNode;
+    }
+
+    private function processMethodCall(Node\Expr\MethodCall $node)
+    {
+        $newArgs = [];
+        foreach ($node->getArgs() as $arg) {
+            $newArgs[] = $arg->value;
+        }
+
+        if (empty($newArgs)) {
+            $newNode = $this->nodeFactory->createStaticCall(
+                $this->replacementClass['className'],
+                $this->replacementClass['methodName'],
+                [
+                    [$node->var, $node->name->toString()],
+                ]
+            );
+        } else {
+            $newNode = $this->nodeFactory->createStaticCall(
+                $this->replacementClass['className'],
+                $this->replacementClass['methodName'],
+                [
+                    [$node->var, $node->name->toString()],
+                    $newArgs,
+                ]
+            );
+        }
+
+        return $newNode;
+    }
+
+    private function processStaticMethodCall(Node\Expr\StaticCall $node)
+    {
+        $newArgs = [];
+        foreach ($node->getArgs() as $arg) {
+            $newArgs[] = $arg->value;
+        }
+
+        if (empty($newArgs)) {
+            $newNode = $this->nodeFactory->createStaticCall(
+                $this->replacementClass['className'],
+                $this->replacementClass['methodName'],
+                [
+                    [$node->class->toString(), $node->name->toString()],
+                ]
+            );
+        } else {
+            $newNode = $this->nodeFactory->createStaticCall(
+                $this->replacementClass['className'],
+                $this->replacementClass['methodName'],
+                [
+                    [$node->class->toString(), $node->name->toString()],
+                    $newArgs,
+                ]
+            );
+        }
+
         return $newNode;
     }
 
     public function getRuleDefinition() : RuleDefinition
     {
         return new RuleDefinition(
-            'Replace constant by new ones',
+            'Replace error suppression with static call',
             [new ConfiguredCodeSample(<<<'CODE_SAMPLE'
-@foo_function_call($arg1, $arg2)
+$x = @foo_function_call($arg1, $arg2)
 CODE_SAMPLE
                 ,<<<'CODE_SAMPLE'
-className::classMethod('foo_function_call', $arg1, $arg2);
+$c = className::classMethod('foo_function_call',[$arg1, $arg2]);
 CODE_SAMPLE
                 , ['className' => '\Tests\App', 'methodName' => 'getDefine'])]);
     }

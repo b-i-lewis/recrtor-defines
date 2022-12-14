@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Utils\Rector\Rector;
+namespace Rector;
 
 
 use PhpParser\Node;
-use PhpParser\Node\Expr\FuncCall;
 use Rector\Core\Contract\Rector\ConfigurableRectorInterface;
 use Rector\Core\Rector\AbstractRector;
-use RectorPrefix202208\Webmozart\Assert\Assert;
+use RectorPrefix202212\Webmozart\Assert\Assert;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\ConfiguredCodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 use PhpParser\Node\Expr\ConstFetch;
+use PhpParser\Node\Expr\FuncCall;
 
 final class RectorReplaceDefinesWithMethodCalls extends AbstractRector implements ConfigurableRectorInterface
 {
@@ -46,7 +46,7 @@ final class RectorReplaceDefinesWithMethodCalls extends AbstractRector implement
         }
 
         if (null === $args) {
-            return null;
+            return $node;
         }
         return $this->returnNewNode($args);
     }
@@ -70,6 +70,6 @@ CODE_SAMPLE
                 , <<<'CODE_SAMPLE'
 className::classMethod('SOME_DEFINE_NAME');
 CODE_SAMPLE
-                , ['className' => '\Tests\App', 'methodName' => 'suppressedFunction'])]);
+                , ['className' => '\Tests\App', 'methodName' => 'getDefine'])]);
     }
 }
