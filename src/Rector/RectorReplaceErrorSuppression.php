@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Rector;
+namespace C2ORector\Rector;
 
 
 use PhpParser\Node;

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Rector;
+namespace C2ORector\Rector;
 
 
 use PhpParser\Node;
@@ -42,7 +42,14 @@ final class RectorReplaceDefinesWithMethodCalls extends AbstractRector implement
         if ($node instanceof FuncCall && $this->isName($node, 'constant')) {
             $args = $node->args;
         } elseif ($node instanceof ConstFetch) {
+            if (
+                $this->getName($node->name) === 'true'
+                || $this->getName($node->name) === 'false'
+            ) {
+                return $node;
+            }
             $args = [$this->getName($node->name)];
+
         }
 
         if (null === $args) {

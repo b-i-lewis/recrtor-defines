@@ -1,17 +1,16 @@
 {
-    "name": "b-i-lewis/recor-defines",
+    "name": "quayside/c2o-rector-rules",
     "type": "library",
     "license": "MIT",
     "autoload-dev": {
         "psr-4": {
-            "Tests\\": "tests",
-            "Utils\\Rector\\": "utils/rector/src"
+            "C2ORector\\": "src"
         }
     },
     "authors": [
         {
-            "name": "BenLewis",
-            "email": "ben.lewis@c2o.com"
+            "name": "DevTeam",
+            "email": "dev.team@c2o.com"
         }
     ],
     "require": {
